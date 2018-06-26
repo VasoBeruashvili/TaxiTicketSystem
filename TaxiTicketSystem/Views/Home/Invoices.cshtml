@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html ng-app="TaxiTicketSystemModule" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+    <title>FINA (TTS)</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/jquery.timeentry.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/Scripts/jquery.plugin.min.js"></script>
+    <script src="~/Scripts/jquery.timeentry.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/angular-locale_ge.js"></script>
+    <script src="~/Scripts/ui-bootstrap-tpls-0.13.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <link href="~/Content/angular-grid.css" rel="stylesheet" />
+    <script src="~/Scripts/angular-grid.js"></script>
+    <link href="~/Content/theme-fresh.css" rel="stylesheet" />
+    <link href="~/Content/jquery.clear.input.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery.clear.input.js"></script>
+    <link href="~/Content/style.css" rel="stylesheet" />
+    <script src="~/Scripts/moment.min.js"></script>
+    <link href="~/Content/bootstrap-flat.min.css" rel="stylesheet" />
+    <script src="~/Scripts/ka.js"></script>
+    <script src="~/Scripts/FileSaver.min.js"></script>
+    <script src="~/Scripts/app.js"></script>
+</head>
+<body ng-controller="InvoicesController" data-ng-init="init()">    
+    <!--Menu Start-->
+    <nav class="navbar navbar-default navbar-fixed-top shadowed">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/Home/Index"><img src="~/Content/Resources/fina_logo_blue.png" style="margin-top: -10px;" height="40" /></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li ng-show="showHomeMenu"><a href="/Home/Index"><i class="fa fa-home"></i> მთავარი</a></li>                    
+                    <li ng-show="showContragentsMenu"><a href="/Home/Contragents"><i class="fa fa-users"></i> კონტრაგენტები</a></li>
+                    <li ng-show="showDebitAccountsMenu"><a href="/Home/DebitAccounts"><i class="fa fa-money"></i> თანხის გატარება</a></li>
+                    <li><a href="/Home/Reports"><i class="fa fa-list-alt"></i> რეპორტები</a></li>
+                    <li class="active"><a href="/Home/Invoices"><i class="fa fa-server"></i> ინვოისები</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right" style="margin-right: 1px;">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle {{isDisabled}}" style="cursor: default;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{fullName}}</a>
+                        <ul class="dropdown-menu" ng-show="showChangePwd">
+                            <li><a ng-click="OpenPwdModal()"><i class="fa fa-key"></i> პაროლის შეცვლა</a></li>
+                        </ul>
+                    </li>
+                    <li class="active"><a onclick="LogOutSafe()" title="გასვლა" style="margin-left: 5px;"><i class="fa fa-sign-out"></i></a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <!--Menu End-->
+
+    <!--Contragents Template Start-->
+    <script type="text/ng-template" id="customTemplate.html">
+        <a>
+            <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
+        </a>
+    </script>
+    <!--Contragents template End-->
+
+    <div class="container-fluid" style="height: 100%;">
+        <div class="row" style="height: 100%;">
+            <div class="col-md-12" style="height: 100%;">               
+                <!--Content Start-->
+                <!--Start AngularGrid-->
+                <form class="form-inline" style="margin-top: 65px;">
+                    <a class="btn btn-sm btn-default" title="ყველას მონიშვნა" style="margin-right: 5px;" ng-show="showCheckAll" ng-click="checkAllInvoices()"><i ng-class="checkClass"></i></a>
+
+                    <div class="input-group input-group-sm" ng-show="chooseYearAndMonth">
+                        <span class="input-group-addon">აირჩიეთ წელი და თვე:</span>
+                        <input style="width: 150px;" datepicker-options="{minMode: 'month'}" datepicker-mode="'year'" ng-click="openYearMonthpicker($event)" type="text" class="form-control" datepicker-popup="yyyy MMMM" ng-model="year" is-open="yearmonth_opened" show-button-bar="false">
+                    </div>
+
+                    <div class="input-group input-group-sm" ng-show="chooseYear">
+                        <span class="input-group-addon">აირჩიეთ წელი:</span>
+                        <input style="width: 120px;" datepicker-options="{minMode: 'year'}" datepicker-mode="'year'" ng-click="openYearpicker($event)" type="text" class="form-control" datepicker-popup="yyyy" ng-model="year" is-open="year_opened" show-button-bar="false">
+                    </div>
+                    
+                    <a class="btn btn-sm btn-default" style="margin-left: 15px;" title="ინვოისის ელ-ფოსტაზე გაგზავნა" ng-click="SendToEmail()" ng-show="showSendToEmail"><img ng-src="{{sendToEmailImg}}" /> ელ-ფოსტაზე გაგზავნა</a>
+                    
+                    <input class="input-sm form-control" style="margin-left: 15px; width: 500px;" placeholder="ელ-ფოსტის დამატებითი ტექსტი..." ng-model="emailText" ng-show="showSendToEmail" />                                                      
+
+                    <div class="input-group input-group-sm" style="float: right;">                       
+                        <span class="input-group-addon"><i class="fa fa-search"></i> ძებნა:</span>
+                        <input class="form-control input-sm clearable" type="text" ng-model="gridOptions.quickFilterText" style="width: 200px;" />
+                    </div>      
+                    
+                    <a class="btn btn-sm btn-default" ng-show="showCheckAll" ng-click="GenerateInvoicesExcel()" style="float: right; margin-right: 15px;"><i class="fa fa-file-excel-o"></i> Excel</a>              
+                </form>
+
+                <div id="grdContInvoices" style="margin-top: 5px;">
+                    <div ag-grid="gridOptions" class="ag-fresh" style="height: 100%; width: 100%;"></div>
+                </div>               
+                <!--End AngularGrid-->
+                <!--Content End-->
+            </div>
+        </div>
+    </div>
+
+
+    <!--cp modal-->
+    <script type="text/ng-template" id="pwdModal.html">
+        <div class="modal-header">
+            <a class="close" ng-click="Cancel()">&times;</a>
+            <h4 class="modal-title">პაროლის შეცვლა</h4>
+        </div>
+
+        <div class="panel-body">
+            <form class="form-inline">
+                <div class="input-group" style="width: 100%;">
+                    <span class="input-group-addon" style="width: 200px; text-align: left;"><i class="fa fa-circle"></i> ძველი პაროლი:</span>
+                    <input type="password" class="form-control clearable input-sm" id="txtOldPwd" ng-model="oldPwd" ng-change="validateModal()" autofocus />
+                </div>
+                <br />
+                <br />
+                <br />
+                <div class="input-group" style="width: 100%;">
+                    <span class="input-group-addon" style="width: 200px; text-align: left;"><i class="fa fa-circle-o"></i> ახალი პაროლი:</span>
+                    <input type="password" class="form-control clearable input-sm" id="txtNewPwd" ng-model="newPwd" ng-change="validateModal()" maxlength="12" />
+                </div>
+                <br />
+                <br />
+                <div class="input-group" style="width: 100%;">
+                    <span class="input-group-addon" style="width: 200px; text-align: left;"><i class="fa fa-circle-o-notch"></i> გაიმეორეთ პაროლი:</span>
+                    <input type="password" class="form-control clearable input-sm" id="txtRepeatNewPwd" ng-model="repeatNewPwd" ng-change="validateModal()" maxlength="12" />
+                </div>
+            </form>
+        </div>
+
+        <div class="alert alert-success" style="margin: 10px 20px 25px 20px; text-align: center;" role="alert" ng-show="showSuccessAlert">პაროლი წარმატებით შეიცვალა!</div>
+        <div class="alert alert-danger" style="margin: 10px 20px 25px 20px; text-align: center;" role="alert" ng-show="showFailureAlert">პაროლის შენახვა ვერ მოხერხდა!</div>
+
+        <div class="alert alert-danger" style="margin: 10px 20px 25px 20px; text-align: center;" role="alert" ng-show="showNotEqualsAlert">ახალი პაროლი არ ემთხვევა განმეორებით პაროლს!</div>
+        <div class="alert alert-danger" style="margin: 10px 20px 25px 20px; text-align: center;" role="alert" ng-show="showLengthAlert">პაროლის სიგრძე არ უნდა აღემატებოდეს <b>12</b> სიმბოლოს!</div>
+        <div class="alert alert-danger" style="margin: 10px 20px 25px 20px; text-align: center;" role="alert" ng-show="showErrorMsgAlert">{{errorMsg}}</div>
+
+        <div class="modal-footer">
+            <a class="btn btn-sm btn-primary" ng-click="Save()"><i class="fa fa-save"></i> შენახვა</a>
+            <a class="btn btn-sm btn-default" ng-click="Cancel()"><i class="fa fa-close"></i> დახურვა</a>
+        </div>
+    </script>
+    <!--//cp modal-->
+    @*<div class="container-fluid pageFooter">
+        <span style="float: right;">&copy;2011-@DateTime.Now.Year FINA Ltd</span>
+    </div>*@
+</body>
+</html>

@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html ng-app="TaxiTicketSystemModule" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+    <title>FINA (TTS)</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/jquery.timeentry.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/Scripts/jquery.plugin.min.js"></script>
+    <script src="~/Scripts/jquery.timeentry.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/angular-locale_ge.js"></script>
+    <script src="~/Scripts/ui-bootstrap-tpls-0.13.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <link href="~/Content/angular-grid.css" rel="stylesheet" />
+    <script src="~/Scripts/angular-grid.js"></script>
+    <link href="~/Content/theme-fresh.css" rel="stylesheet" />
+    <link href="~/Content/jquery.clear.input.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery.clear.input.js"></script>
+    <link href="~/Content/style.css" rel="stylesheet" />
+    <script src="~/Scripts/moment.min.js"></script>
+    <link href="~/Content/bootstrap-flat.min.css" rel="stylesheet" />
+    <script src="~/Scripts/ka.js"></script>
+    <script src="~/Scripts/FileSaver.min.js"></script>
+    <script src="~/Scripts/app.js"></script>
+</head>
+<body ng-controller="DriverSalaryReportController" data-ng-init="init()">    
+    <!--Menu Start-->
+    <nav class="navbar navbar-default navbar-fixed-top shadowed">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/Home/Index"><img src="~/Content/Resources/fina_logo_blue.png" style="margin-top: -10px;" height="40" /></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="/Home/DriverSalaryReport"><i class="fa fa-dollar"></i> ბუღალტერია მძღოლები</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right" style="margin-right: 1px;">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle {{isDisabled}}" style="cursor: default;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{fullName}}</a>
+                    </li>
+                    <li class="active"><a onclick="LogOutSafe()" title="გასვლა" style="margin-left: 5px;"><i class="fa fa-sign-out"></i></a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <!--Menu End-->
+
+    <!--Contragents Template Start-->
+    <script type="text/ng-template" id="customTemplate.html">
+        <a>
+            <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
+        </a>
+    </script>
+    <!--Contragents template End-->
+
+    <div class="container-fluid" style="height: 100%;">
+        <div class="row" style="height: 100%;">
+            <div class="col-md-12" style="height: 100%;">               
+                <!--Content Start-->
+                <!--Start AngularGrid-->
+                <form class="form-inline" style="margin-top: 65px;">
+                    <a class="btn btn-sm btn-default" title="Excel" style="margin-right: 15px;" ng-click="GenerateDriverSalaryReportExcel()"><i class="fa fa-file-excel-o"></i> Excel</a>
+                    
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-addon">პერიოდი:</span>
+                        <input ng-click="openFromDatepicker($event)" type="text" class="form-control" datepicker-options="dateOptions" datepicker-popup="yyyy-MM-dd" ng-model="date_from" is-open="from_opened" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+                        <div class="input-group-btn" dropdown>
+                            <button type="button" id="single-button" style="margin: 0 4px 0 4px;" class="btn btn-default" dropdown-toggle tabindex="-1">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                            <ul class="dropdown-menu choices" role="menu" aria-labelledby="single-button">
+                                <li role="menuitem"><a ng-click="menuChoiceClick('today')">დღეს</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('year')">მიმდინარე წელიწადი</a></li>
+                                <li role="menuitem" class="divider"></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('kvartali1')">I კვარტალი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('kvartali2')">II კვარტალი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('kvartali3')">III კვარტალი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('kvartali4')">IV კვარტალი</a></li>
+                                <li role="menuitem" class="divider"></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('yan')">01 - იანვარი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('feb')">02 - თებერვალი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('mar')">03 - მარტი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('apr')">04 - აპრილი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('may')">05 - მაისი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('jun')">06 - ივნისი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('jul')">07 - ივლისი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('aug')">08 - აგვისტო</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('sep')">09 - სექტემბერი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('oct')">10 - ოქტომბერი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('nov')">11 - ნოემბერი</a></li>
+                                <li role="menuitem"><a ng-click="menuChoiceClick('dec')">12 - დეკემბერი</a></li>
+                            </ul>
+                        </div>
+                        <input ng-click="openToDatepicker($event)" type="text" class="form-control" datepicker-options="dateOptions" datepicker-popup="yyyy-MM-dd" ng-model="date_to" is-open="to_opened" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+                    </div>
+
+                    <a class="btn btn-sm btn-default" ng-click="RefreshDriverSalaryReports()" title="განახლება" style="margin-right: 15px;"><i class="fa fa-refresh"></i></a>                                    
+
+                    <div class="input-group input-group-sm" style="float: right;">
+                        <span class="input-group-addon"><i class="fa fa-search"></i> ძებნა:</span>
+                        <input class="form-control input-sm clearable" type="text" ng-model="gridOptions.quickFilterText" style="width: 200px;" />
+                    </div>                    
+                </form>
+
+                <div id="grdContDriverSalary" style="margin-top: 5px;">
+                    <div ag-grid="gridOptions" class="ag-fresh" style="height: 100%; width: 100%;"></div>
+                    <pre style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; margin-top: -5px; padding: 9px 6px 6px 6px; background-color: #fafafa;"> <b style="float: right; margin-right: 40px;">სულ ჯამი: {{totalAmountSum}}</b></pre>
+                </div>               
+                <!--End AngularGrid-->
+                <!--Content End-->
+            </div>
+        </div>
+    </div>
+    @*<div class="container-fluid pageFooter">
+        <span style="float: right;">&copy;2011-@DateTime.Now.Year FINA Ltd</span>
+    </div>*@
+</body>
+</html>

@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html ng-app="TaxiTicketSystemModule" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+    <title>FINA (TTS)</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/jquery.timeentry.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/Scripts/jquery.plugin.min.js"></script>
+    <script src="~/Scripts/jquery.timeentry.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/angular-locale_ge.js"></script>
+    <script src="~/Scripts/ui-bootstrap-tpls-0.13.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <link href="~/Content/angular-grid.css" rel="stylesheet" />
+    <script src="~/Scripts/angular-grid.js"></script>
+    <link href="~/Content/theme-fresh.css" rel="stylesheet" />
+    <link href="~/Content/jquery.clear.input.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery.clear.input.js"></script>
+    <link href="~/Content/style.css" rel="stylesheet" />
+    <script src="~/Scripts/moment.min.js"></script>
+    <link href="~/Content/bootstrap-flat.min.css" rel="stylesheet" />
+    <script src="~/Scripts/ka.js"></script>
+    <script src="~/Scripts/app.js"></script>
+</head>
+<body ng-controller="ContragentsController" data-ng-init="init()">
+    <!--Menu Start-->
+    <nav class="navbar navbar-default navbar-fixed-top shadowed">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/Home/Index"><img src="~/Content/Resources/fina_logo_blue.png" style="margin-top: -10px;" height="40" /></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="/Home/Index"><i class="fa fa-home"></i> მთავარი</a></li>                    
+                    <li class="active"><a href="/Home/Contragents"><i class="fa fa-users"></i> კონტრაგენტები</a></li>
+                    <li><a href="/Home/DebitAccounts"><i class="fa fa-money"></i> თანხის გატარება</a></li>
+                    <li><a href="/Home/Reports"><i class="fa fa-list-alt"></i> რეპორტები</a></li>
+                    <li><a href="/Home/Invoices"><i class="fa fa-server"></i> ინვოისები</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right" style="margin-right: 1px;">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle {{isDisabled}}" style="cursor: default;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{fullName}}</a>
+                        <ul class="dropdown-menu" ng-show="showChangePwd">
+                            <li><a>პაროლის შეცვლა</a></li>
+                        </ul>
+                    </li>
+                    <li class="active"><a onclick="LogOutSafe()" title="გასვლა" style="margin-left: 5px;"><i class="fa fa-sign-out"></i></a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <!--Menu End-->
+    <div class="container-fluid" style="height: 100%;">
+        <!--Content Start-->        
+        <!--Start AngularGrid-->        
+        <form class="form-inline" style="margin-top: 65px;">     
+            <a class="btn btn-sm btn-primary" ng-click="OpenContragentModal('დამატება')" title="დამატება" style="margin-right: 15px;"><i class="fa fa-plus-square"></i></a>                       
+            <div class="input-group input-group-sm" style="float: right;">
+                <span class="input-group-addon"><i class="fa fa-search"></i> ძებნა:</span>
+                <input class="form-control input-sm clearable" type="text" ng-model="gridOptions.quickFilterText" autofocus style="width: 200px;" />
+            </div>
+            <a class="btn btn-sm btn-danger" style="float: right; margin-right: 15px;" ng-show="showNotifyMe" ng-click="FilterExpiredContragents()" title="კონტრაგენტები, რომელთაც ხელშეკრულების ვადის ამოწურვამდე დარჩენილი აქვთ 14 დღე ან ნაკლები ან და უკვე ამოწურული აქვთ ვადა."><i class="fa fa-warning"></i> ხელშეკრულების ვადა ეწურებათ</a>
+        </form>
+        <div id="grdContContrag">
+            <div ag-grid="gridOptions" class="ag-fresh" style="height: 100%; width: 100%; margin-top: 5px; margin-bottom: 10px;"></div>
+        </div>
+        <!--End AngularGrid-->
+
+        <!--Start Modal-->
+        <script type="text/ng-template" id="contragentModal.html">
+            <div class="modal-header">
+                <a class="close" ng-click="Cancel()">&times;</a>
+                <h4 class="modal-title">კონტრაგენტის {{title}}</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-indent"></i> ID &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtID" class="form-control input-sm clearable" ng-model="fakeID" ng-change="ValidateOtherRequiredInputs()" autofocus>
+                </div>
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-align-left"></i> დასახელება &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtName" class="form-control input-sm clearable" ng-model="name" ng-change="ValidateOtherRequiredInputs()">
+                </div>     
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-key"></i> კოდი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtCode" class="form-control input-sm clearable" ng-model="code" ng-change="ValidateOtherRequiredInputs()">
+                </div>  
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-location-arrow"></i> მისამართი</span>
+                    <input type="text" id="txtAddress" class="form-control input-sm clearable" ng-model="address" ng-change="ValidateOtherRequiredInputs()">
+                </div>  
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-user"></i> საკონტაქტო პირი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtContactPerson" class="form-control input-sm clearable" ng-model="contactPerson" ng-change="ValidateOtherRequiredInputs()">
+                </div>
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-envelope-o"></i> ელ-ფოსტა &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtEmail" class="form-control input-sm clearable" ng-model="email" ng-change="ValidateOtherRequiredInputs()">
+                </div>
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-phone"></i> ტელეფონი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtPhone" class="form-control input-sm clearable" ng-model="phone" ng-change="ValidateOtherRequiredInputs()">
+                </div> 
+                <br />                
+                <form class="form-inline">
+                    <div class="input-group" style="margin-right: 15px;">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i> ხელშ. გაფორმების თარიღი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        <input style="width: 100px;" id="dt1" datepicker-options="dateOptions" ng-click="openContractStartDatePicker($event)" type="text" class="form-control input-sm" datepicker-popup="yyyy-MM-dd" ng-model="contractStartDate" ng-change="ValidateOtherRequiredInputs()" is-open="openedContractStart" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon" style="{{expDateStyle}}"><i class="fa fa-calendar"></i> ხელშ. ამოწურვის თარიღი &nbsp;&nbsp;&nbsp;&nbsp; <span style="background-color: red;" class="badge">{{daysLeft}}</span></span>
+                        <input style="width: 100px;" id="dt2" datepicker-options="dateOptions" ng-click="openContractExpirationDatePicker($event)" type="text" class="form-control input-sm" datepicker-popup="yyyy-MM-dd" ng-model="contractExpirationDate" ng-change="ValidateOtherRequiredInputs()" is-open="openedContractExpiration" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+                    </div>
+                </form> 
+                <br />
+                <form class="form-inline">
+                    <div class="input-group" style="margin-right: 15px;">
+                        <span class="input-group-addon"><i class="fa fa-calendar-o"></i> მომსახურების გადახდის რიცხვი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        <input style="width: 100px;" id="dt3" type="text" class="form-control input-sm" ng-model="servicePaymentDate" ng-change="ValidateOtherRequiredInputs()">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-bars" style="border-top-right-radius: 0; border-bottom-right-radius: 0;"></i> დღგ </span>
+                        <div class="btn-group" dropdown is-open="status.isopen">
+                            <button id="single-button" style="width: 340px; text-align: left; border-top-left-radius: 0; border-bottom-left-radius: 0;" type="button" class="btn btn-sm btn-default cmbVatType" dropdown-toggle ng-disabled="disabled">
+                                {{selectedVatType}} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="single-button">
+                                <li ng-repeat="vatType in vatTypes" role="menuitem" ng-click="selectVatType($index)"><a>{{vatType}}</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </form> 
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-sun-o"></i> თვის პერიოდი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" class="form-control input-sm clearable" ng-model="monthPeriod">
+                </div>
+                <br />
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-money"></i> მომსახურების ტარიფი &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <input type="text" id="txtServiceRates" class="form-control input-sm clearable" ng-model="serviceRates" ng-change="ValidateOtherRequiredInputs()">
+                </div>
+            </div>
+
+            <div class="alert alert-success" style="margin: 0 30px 25px 30px; text-align: center;" role="alert" ng-show="showSuccessAlert">მონაცემები შენახულია!</div>
+            <div class="alert alert-danger" style="margin: 0 30px 25px 30px; text-align: center;" role="alert" ng-show="showFailureAlert">მონაცემების შენახვა ვერ მოხერხდა!</div>
+
+            <div class="alert alert-success" style="margin: 0 30px 25px 30px; text-align: center;" role="alert" ng-show="showSuccessAlert1">პაროლი წარმატებით დაბრუნდა!</div>
+            <div class="alert alert-danger" style="margin: 0 30px 25px 30px; text-align: center;" role="alert" ng-show="showFailureAlert1">პაროლის დაბრუნება ვერ მოხერხდა!</div>
+
+            <div class="modal-footer">    
+                <a class="btn btn-sm btn-warning" ng-click="ReturnPwd()" ng-show="showPwdReturn" style="float: left;"><i class="fa fa-key"></i> პაროლის დაბრუნება</a>            
+                <a class="btn btn-sm btn-success" ng-click="SaveAndNew()" ng-show="showSaveAndNewButton"><i class="fa fa-plus-circle"></i> შენახვა და ახალი</a>
+                <a class="btn btn-sm btn-primary" ng-click="Save()"><i class="fa fa-save"></i> შენახვა</a>
+                <a class="btn btn-sm btn-default" ng-click="Cancel()"><i class="fa fa-close"></i> დახურვა</a>
+            </div>
+        </script>
+        <!--End Modal-->
+        <!--Content End-->
+    </div>
+    @*<div class="container-fluid pageFooter">
+        <span style="float: right;">&copy;2011-@DateTime.Now.Year FINA Ltd</span>
+    </div>*@
+</body>
+</html>

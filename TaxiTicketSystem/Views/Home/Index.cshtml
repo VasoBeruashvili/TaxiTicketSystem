@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html ng-app="TaxiTicketSystemModule" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+    <title>FINA (TTS)</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/jquery.timeentry.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/Scripts/jquery.plugin.min.js"></script>
+    <script src="~/Scripts/jquery.timeentry.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/angular-locale_ge.js"></script>
+    <script src="~/Scripts/ui-bootstrap-tpls-0.13.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <link href="~/Content/angular-grid.css" rel="stylesheet" />
+    <script src="~/Scripts/angular-grid.js"></script>
+    <link href="~/Content/theme-fresh.css" rel="stylesheet" />
+    <link href="~/Content/jquery.clear.input.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery.clear.input.js"></script>
+    <link href="~/Content/style.css" rel="stylesheet" />
+    <script src="~/Scripts/moment.min.js"></script>
+    <link href="~/Content/bootstrap-flat.min.css" rel="stylesheet" />
+    <script src="~/Scripts/ka.js"></script>
+    <script src="~/Scripts/app.js"></script>
+</head>
+<body ng-controller="TaxiTicketSystemController" data-ng-init="init()">
+    <!--Menu Start-->
+    <nav class="navbar navbar-default navbar-fixed-top shadowed">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/Home/Index"><img src="~/Content/Resources/fina_logo_blue.png" style="margin-top: -10px;" height="40" /></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="/Home/Index"><i class="fa fa-home"></i> მთავარი</a></li>                    
+                    <li><a href="/Home/Contragents"><i class="fa fa-users"></i> კონტრაგენტები</a></li>
+                    <li><a href="/Home/DebitAccounts"><i class="fa fa-money"></i> თანხის გატარება</a></li>
+                    <li><a href="/Home/Reports"><i class="fa fa-list-alt"></i> რეპორტები</a></li>
+                    <li><a href="/Home/Invoices"><i class="fa fa-server"></i> ინვოისები</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right" style="margin-right: 1px;">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle {{isDisabled}}" style="cursor: default;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{fullName}}</a>
+                        <ul class="dropdown-menu" ng-show="showChangePwd">
+                            <li><a>პაროლის შეცვლა</a></li>
+                        </ul>
+                    </li>
+                    <li class="active"><a onclick="LogOutSafe()" title="გასვლა" style="margin-left: 5px;"><i class="fa fa-sign-out"></i></a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <!--Menu End-->
+    <div class="container-fluid" style="height: 100%;">
+        <!--Content Start-->        
+        <!--Start AngularGrid-->        
+        <form class="form-inline" style="margin-top: 65px;">     
+            <a class="btn btn-sm btn-primary" ng-click="OpenModal('დამატება')" title="დამატება" style="margin-right: 15px;"><i class="fa fa-plus-square"></i></a>
+                   
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon">პერიოდი:</span>
+                <input ng-click="openFromDatepicker($event)" type="text" class="form-control" datepicker-options="dateOptions" datepicker-popup="yyyy-MM-dd" ng-model="date_from" is-open="from_opened" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+                <div class="input-group-btn" dropdown>
+                    <button type="button" id="single-button" style="margin: 0 4px 0 4px;" class="btn btn-default" dropdown-toggle tabindex="-1">
+                        <i class="fa fa-calendar"></i>
+                    </button>
+                    <ul class="dropdown-menu choices" role="menu" aria-labelledby="single-button">
+                        <li role="menuitem"><a ng-click="menuChoiceClick('today')">დღეს</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('year')">მიმდინარე წელიწადი</a></li>
+                        <li role="menuitem" class="divider"></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('kvartali1')">I კვარტალი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('kvartali2')">II კვარტალი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('kvartali3')">III კვარტალი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('kvartali4')">IV კვარტალი</a></li>
+                        <li role="menuitem" class="divider"></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('yan')">01 - იანვარი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('feb')">02 - თებერვალი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('mar')">03 - მარტი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('apr')">04 - აპრილი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('may')">05 - მაისი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('jun')">06 - ივნისი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('jul')">07 - ივლისი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('aug')">08 - აგვისტო</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('sep')">09 - სექტემბერი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('oct')">10 - ოქტომბერი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('nov')">11 - ნოემბერი</a></li>
+                        <li role="menuitem"><a ng-click="menuChoiceClick('dec')">12 - დეკემბერი</a></li>
+                    </ul>
+                </div>
+                <input ng-click="openToDatepicker($event)" type="text" class="form-control" datepicker-options="dateOptions" datepicker-popup="yyyy-MM-dd" ng-model="date_to" is-open="to_opened" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+            </div>
+
+            <a class="btn btn-sm btn-default" ng-click="RefreshDocItems()" title="განახლება" style="margin-right: 15px;"><i class="fa fa-refresh"></i></a>
+
+            @*<label><input type="checkbox" value="" ng-model="getDeletedItems"> გაუქმებული ქვითრები</label>*@
+            
+            <div class="input-group input-group-sm" style="float: right;">
+                <span class="input-group-addon"><i class="fa fa-search"></i> ძებნა:</span>
+                <input class="form-control input-sm clearable" type="text" ng-model="gridOptions.quickFilterText" autofocus style="width: 200px;" />
+            </div>
+        </form>
+        <div id="grdContIndex">
+            <div ag-grid="gridOptions" class="ag-fresh" style="height: 100%; width: 100%; margin-top: 5px; margin-bottom: 10px;"></div>
+        </div>
+        <!--End AngularGrid-->
+
+        <!--Start Modal-->
+        <script type="text/ng-template" id="modal.html">
+            <div class="modal-header">
+                <a class="close" ng-click="Cancel()">&times;</a>
+                <h4 class="modal-title">ბილეთის {{title}}</h4>
+            </div>
+
+            <div class="modal-body" data-ng-init="init()">
+                <form class="form-inline">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-search"></i> კომპანიის ID &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                        <input type="text" class="form-control input-sm clearable" style="width: 100px;" id="txtCompanyName" ng-model="contragentFakeID" ng-change="GetContragentByFakeID()" autofocus>
+                    </div>
+                    <input type="text" class="form-control input-sm dis" ng-model="companyName" style="width: 485px; background-color: #9dd6ff; border-color: #9dd6ff; margin-left: 10px;" disabled />
+                </form>
+
+                <form class="form-inline" style="margin-top: 15px;">
+                    <div class="input-group" style="margin-right: 10px;">
+                        <span class="input-group-addon" id="dtDate"><i class="fa fa-calendar"></i> მგზავრობის თარიღი &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                        <input style="width: 100px;" id="cldDate" datepicker-options="dateOptions" ng-click="openDatePicker($event)" type="text" class="form-control input-sm" datepicker-popup="yyyy-MM-dd" ng-model="dateNow" ng-change="ValidateOtherRequiredInputs()" is-open="opened" on-open-focus="false" close-text="დახურვა" clear-text="გასუფთავება" current-text="დღეს">
+                    </div>
+                    <div class="input-group" style="margin-right: -15px;">
+                        <span class="input-group-addon"><i class="fa fa-clock-o"></i> დაწყების დრო</span>
+                        <input type="text" id="startTime" class="form-control input-sm" style="width: 65px;" ng-model="startTime" />
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-clock-o"></i> დასრულების დრო</span>
+                        <input type="text" id="endTime" class="form-control input-sm" style="width: 65px;" ng-model="endTime" />
+                    </div>
+                </form>
+                <br />
+                <form class="form-inline" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-search"></i> მძღოლის ID &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                        <input type="text" class="form-control clearable input-sm" style="width: 100px;" id="txtStaffName" ng-model="staffFakeID" ng-change="GetStaffByFakeID()" autofocus>
+                    </div>
+                    <input type="text" class="form-control input-sm dis" ng-model="staffName" style="width: 485px; background-color: #9dd6ff; border-color: #9dd6ff; margin-left: 10px;" disabled />
+                </form>
+
+                <form class="form-inline" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-search"></i> ავტომობილის N &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                        <input type="text" class="form-control clearable input-sm" style="width: 100px;" id="txtCarName" ng-model="carFakeID" ng-change="GetCarByFakeID()" autofocus>
+                    </div>
+                    <input type="text" class="form-control input-sm dis" ng-model="carNumber" style="width: 485px; background-color: #9dd6ff; border-color: #9dd6ff; margin-left: 10px;" disabled />
+                </form>
+
+                <form class="form-inline" style="margin-top: 15px;">
+                    <div class="input-group" style="margin-right: 10px;">
+                        <span class="input-group-addon"><i class="fa fa-road"></i> გავლილი მანძილი: <b>კმ</b> &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                        <input type="number" id="txtTravDist" class="form-control clearable input-sm" style="width: 100px;" ng-model="traveledDistance" ng-change="ValidateOtherRequiredInputs()" />
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-money"></i> მგზავრობის ღირებულება: <b>ლარი</b> &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                        <input type="number" id="txtTPrice" class="form-control clearable input-sm" ng-model="amountPrice" ng-change="GenerateModalSum()" style="width: 100px;" />
+                    </div>
+                </form>
+                <br />
+                <br />
+                <div class="panel panel-default" id="panel1">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <i class="fa fa-arrows-v"></i>
+                            <a data-toggle="collapse" data-target="#collapseOne"
+                               href="#collapseOne">
+                                დამატებითი ველები
+                            </a>                            
+                        </h4>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <form class="form-inline" style="margin-top: 10px;">
+                                <div class="input-group" style="margin-right: 10px;">
+                                    <span class="input-group-addon"><i class="fa fa-money"></i> ავტოსადგომის ხარჯი: <b>ლარი</b> &nbsp&nbsp&nbsp</span>
+                                    <input type="number" class="form-control clearable input-sm" style="width: 150px;" ng-model="parkingCosts" ng-change="GenerateModalSum()" />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-money"></i> საბაჟოს მოსაკრებელი: <b>ლარი</b> &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                                    <input type="number" class="form-control clearable input-sm" style="width: 150px;" ng-model="customsFees" ng-change="GenerateModalSum()" />
+                                </div>
+                            </form>
+                            <form class="form-inline" style="margin-top: 15px; margin-bottom: 30px;">
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-money"></i> დამატებითი ხარჯი: <b>ლარი</b> &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</span>
+                                    <input type="number" class="form-control clearable input-sm" style="width: 148px;" ng-model="additionalCosts" ng-change="GenerateModalSum()" />
+                                </div>
+                            </form>
+                            <label><input type="checkbox" value="" ng-model="withoutPrint"> პრინტერის გარეშე</label>
+                            <textarea class="form-control clearable input-sm" rows="4" placeholder="კომენტარი..." style="resize: vertical" ng-model="commentOut"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: right; margin: -10px 20px 20px 0;"><b>ჯამი: <span style="font-weight: normal;">{{modalSum}}</span> ლარი</b></div>
+
+            <div class="alert alert-success" style="margin: 0 30px 25px 30px; text-align: center;" role="alert" ng-show="showSuccessAlert">მონაცემები შენახულია!</div>
+            <div class="alert alert-danger" style="margin: 0 30px 25px 30px; text-align: center;" role="alert" ng-show="showFailureAlert">მონაცემების შენახვა ვერ მოხერხდა!</div>
+
+            <div class="modal-footer">
+                <a class="btn btn-sm btn-success" ng-click="SaveAndNew()" ng-show="showSaveAndNewButton"><i class="fa fa-plus-circle"></i> შენახვა და ახალი</a>
+                <a class="btn btn-sm btn-primary" ng-click="Save()"><i class="fa fa-save"></i> შენახვა</a>
+                <a class="btn btn-sm btn-default" ng-click="Cancel()"><i class="fa fa-close"></i> დახურვა</a>
+                <a class="btn btn-sm btn-danger" ng-click="Delete()" ng-show="showDeleteButton" style="float: left;"><i class="fa fa-trash"></i> წაშლა</a>
+                <a class="btn btn-sm btn-success" ng-click="Restore()" ng-show="showRestoreButton" style="float: left;"><i class="fa fa-mail-reply"></i> აღდგენა</a>
+            </div>
+        </script>
+        <!--End Modal-->
+        <!--Content End-->
+    </div>
+    @*<div class="container-fluid pageFooter">
+        <span style="float: right;">&copy;2011-@DateTime.Now.Year FINA Ltd</span>
+    </div>*@
+</body>
+</html>

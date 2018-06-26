@@ -1,0 +1,110 @@
+﻿html{
+    height: 100%;
+}
+
+body{
+    background-color: #f3f3f3;
+    padding-top: 100px;
+    height: 100%;
+}
+
+.smartNavigation{
+    height: 30px;
+    background-color: #fff;
+    width: 100%;
+    position: fixed;
+    top: 50px;
+    z-index: 1;
+    -webkit-box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+}
+
+.ptr{
+    cursor: pointer;      
+}
+
+.crnt{
+    cursor: default;
+}
+
+.smartNavCurrentItem{
+    color: #222;
+}
+
+.perpetualLicense{
+    background-color: #27c62a;
+    color: #fff;
+}
+
+.topFixedNavbar{
+    background-color: #28a5dc;
+    height: 50px;
+}
+
+.topFixedNavbarShadow{
+    -webkit-box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+}
+
+.topFixedNavbarItem{
+    color: #fff;
+    position: relative;
+    height: 50px;
+}
+
+.pageFooter{
+    background-color: #444;
+    color: #fff;
+    left: 0;
+    right: 0;
+    position: fixed; /* relative */
+    bottom: 0;
+    font-family: Consolas;
+    padding-top: 6px;
+    height: 30px;
+    -webkit-box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 5px -1px rgba(0,0,0,0.75);
+}
+
+.phone{ 
+    margin-right: 80px;   
+    color: #fff;
+    cursor: default;
+    font-size: 17px;
+    height: 50px;
+    padding-top: 15px;
+    padding-left: 20px;
+    padding-right: 20px; 
+    cursor: text;
+    border-left: 1px solid #2488b5;
+}
+
+.contragentInfo{  
+    color: #fff;
+    cursor: default;
+    font-size: 15px;
+    height: 50px;
+    padding-top: 15px;
+    padding-left: 20px;
+    padding-right: 20px;     
+    border-right: 1px solid #2488b5;     
+    cursor: text;
+}
+
+.logoutImage{  
+    color: #fff;
+    cursor: default;
+    font-size: 17px;
+    height: 50px;
+    padding-top: 13px;
+    padding-left: 20px;
+    padding-right: 20px;   
+    cursor: pointer;          
+}
+
+.logoutImage:hover{
+    background-color: #49b8e9;
+}
